@@ -119,20 +119,23 @@
 
         function solveExpression(expression) {
             try {
+                // Sostituisce 'x' con '*' per garantire il corretto funzionamento delle moltiplicazioni
+                const normalizedExpression = expression.replace(/x/g, '*');
+                
                 const steps = [];
                 
                 // Step 1: Simplify the expression to show the reduction of terms
-                const simplified = math.simplify(expression);
+                const simplified = math.simplify(normalizedExpression);
                 steps.push(`Simplified expression: ${simplified.toString()}`);
                 
                 // Step 2: Break down the expression into individual operations
-                const breakdown = breakdownExpression(expression);
+                const breakdown = breakdownExpression(normalizedExpression);
                 breakdown.forEach((step, index) => {
                     steps.push(`Step ${index + 1}: ${step}`);
                 });
 
                 // Step 3: Evaluate the final result
-                const result = math.evaluate(expression);
+                const result = math.evaluate(normalizedExpression);
                 steps.push(`Final result: ${result}`);
 
                 displaySolution(steps);
