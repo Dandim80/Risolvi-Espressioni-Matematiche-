@@ -1,0 +1,184 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Expression Solver with OCR</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            margin-bottom: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 80px;
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #solutionOutput {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        #solutionOutput p {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #eee;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Math Expression Solver with OCR</h1>
+        <input type="file" id="imageInput" accept="image/*">
+        <textarea id="manualCorrection" placeholder="The extracted expression will appear here. You can correct it manually before solving..."></textarea>
+        <button onclick="extractExpression()">Extract from Image</button>
+        <button onclick="solveFromInput()">Solve Expression</button>
+        <div id="solutionOutput"></div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.0.2/tesseract.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/10.0.0/math.min.js"></script>
+    <script>
+        function extractExpression() {
+            const imageInput = document.getElementById('imageInput').files[0];
+            if (!imageInput) {
+                alert("Please upload an image first!");
+                return;
+            }
+            
+            Tesseract.recognize(
+                imageInput,
+                'eng',
+                {
+                    logger: m => console.log(m) // Mostra i progressi dell'OCR nella console
+                }
+            ).then(({ data: { text } }) => {
+                console.log("Recognized Text: ", text);
+                document.getElementById('manualCorrection').value = text; // Inserisce il testo riconosciuto nell'area di correzione manuale
+            }).catch(err => {
+                console.error(err);
+                displaySolution(["Error recognizing the text. Please try again."]);
+            });
+        }
+
+        function solveFromInput() {
+            const expression = document.getElementById('manualCorrection').value;
+            if (!expression) {
+                alert("Please enter or correct the expression before solving!");
+                return;
+            }
+
+            solveExpression(expression);
+        }
+
+        function solveExpression(expression) {
+            try {
+                const steps = [];
+                
+                // Step 1: Simplify the expression to show the reduction of terms
+                const simplified = math.simplify(expression);
+                steps.push(`Simplified expression: ${simplified.toString()}`);
+                
+                // Step 2: Break down the expression into individual operations
+                const breakdown = breakdownExpression(expression);
+                breakdown.forEach((step, index) => {
+                    steps.push(`Step ${index + 1}: ${step}`);
+                });
+
+                // Step 3: Evaluate the final result
+                const result = math.evaluate(expression);
+                steps.push(`Final result: ${result}`);
+
+                displaySolution(steps);
+            } catch (error) {
+                displaySolution(['Invalid expression! Please check your input.']);
+            }
+        }
+
+        function breakdownExpression(expression) {
+            const parsed = math.parse(expression);
+            const steps = [];
+
+            // Recursively analyze and generate steps from the parsed tree
+            function analyzeNode(node) {
+                if (node.type === 'OperatorNode') {
+                    const left = analyzeNode(node.args[0]);
+                    const right = analyzeNode(node.args[1]);
+                    const operation = `${left} ${node.op} ${right}`;
+                    const result = math.evaluate(operation);
+
+                    // Show detailed calculation
+                    steps.push(`Calculate: ${operation} = ${result}`);
+                    return result;
+                } else if (node.type === 'ParenthesisNode') {
+                    const inside = analyzeNode(node.content);
+                    steps.push(`Evaluate inside parentheses: (${node.content.toString()}) = ${inside}`);
+                    return inside;
+                } else if (node.type === 'ConstantNode' || node.type === 'SymbolNode') {
+                    return node.toString();
+                }
+                return node.toString();
+            }
+
+            analyzeNode(parsed);
+            return steps;
+        }
+
+        function displaySolution(steps) {
+            const solutionOutput = document.getElementById('solutionOutput');
+            solutionOutput.innerHTML = '';
+            steps.forEach(step => {
+                const p = document.createElement('p');
+                p.textContent = step;
+                solutionOutput.appendChild(p);
+            });
+        }
+    </script>
+</body>
+</html>
