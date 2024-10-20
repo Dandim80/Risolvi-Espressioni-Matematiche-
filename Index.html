@@ -118,34 +118,35 @@
         }
 
         function solveExpression(expression) {
-            try {
-                // Normalizza l'espressione: rimuove spazi, sostituisce 'x' con '*', rimuove '=' alla fine
-                const normalizedExpression = expression
-                    .replace(/\s+/g, '') // Rimuove tutti gli spazi
-                    .replace(/x/g, '*')  // Sostituisce 'x' con '*'
-                    .replace(/=$/, '');  // Rimuove il simbolo '=' se presente alla fine
-                
-                const steps = [];
-                
-                // Step 1: Simplify the expression to show the reduction of terms
-                const simplified = math.simplify(normalizedExpression);
-                steps.push(`Simplified expression: ${simplified.toString()}`);
-                
-                // Step 2: Break down the expression into individual operations
-                const breakdown = breakdownExpression(normalizedExpression);
-                breakdown.forEach((step, index) => {
-                    steps.push(`Step ${index + 1}: ${step}`);
-                });
+    try {
+        // Normalizza l'espressione: rimuove spazi, sostituisce 'x' con '*', rimuove '=' alla fine
+        let normalizedExpression = expression
+            .replace(/\s+/g, '') // Rimuove tutti gli spazi
+            .replace(/([0-9])x([0-9])/g, '$1*$2') // Sostituisce 'x' tra numeri con '*'
+            .replace(/=$/, '');  // Rimuove il simbolo '=' se presente alla fine
+        
+        const steps = [];
+        
+        // Step 1: Simplify the expression to show the reduction of terms
+        const simplified = math.simplify(normalizedExpression);
+        steps.push(`Simplified expression: ${simplified.toString()}`);
+        
+        // Step 2: Break down the expression into individual operations
+        const breakdown = breakdownExpression(normalizedExpression);
+        breakdown.forEach((step, index) => {
+            steps.push(`Step ${index + 1}: ${step}`);
+        });
 
-                // Step 3: Evaluate the final result
-                const result = math.evaluate(normalizedExpression);
-                steps.push(`Final result: ${result}`);
+        // Step 3: Evaluate the final result
+        const result = math.evaluate(normalizedExpression);
+        steps.push(`Final result: ${result}`);
 
-                displaySolution(steps);
-            } catch (error) {
-                displaySolution(['Invalid expression! Please check your input.']);
-            }
-        }
+        displaySolution(steps);
+    } catch (error) {
+        displaySolution(['Invalid expression! Please check your input.']);
+    }
+}
+
 
         function breakdownExpression(expression) {
             const parsed = math.parse(expression);
