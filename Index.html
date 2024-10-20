@@ -119,8 +119,10 @@
 
         function solveExpression(expression) {
             try {
-                // Sostituisce 'x' con '*' per garantire il corretto funzionamento delle moltiplicazioni
-                const normalizedExpression = expression.replace(/x/g, '*');
+                // Normalizza l'espressione: rimuove spazi e sostituisce 'x' con '*'
+                const normalizedExpression = expression
+                    .replace(/\s+/g, '') // Rimuove tutti gli spazi
+                    .replace(/x/g, '*'); // Sostituisce 'x' con '*'
                 
                 const steps = [];
                 
