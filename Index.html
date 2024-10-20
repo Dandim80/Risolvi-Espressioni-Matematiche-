@@ -119,10 +119,11 @@
 
         function solveExpression(expression) {
             try {
-                // Normalizza l'espressione: rimuove spazi e sostituisce 'x' con '*'
+                // Normalizza l'espressione: rimuove spazi, sostituisce 'x' con '*', rimuove '=' alla fine
                 const normalizedExpression = expression
                     .replace(/\s+/g, '') // Rimuove tutti gli spazi
-                    .replace(/x/g, '*'); // Sostituisce 'x' con '*'
+                    .replace(/x/g, '*')  // Sostituisce 'x' con '*'
+                    .replace(/=$/, '');  // Rimuove il simbolo '=' se presente alla fine
                 
                 const steps = [];
                 
